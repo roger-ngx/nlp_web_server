@@ -24,6 +24,7 @@ app.use(bodyParser.json());
 
 app.use('/api/bio', require('./routes/bio'));
 app.use('/api/file', require('./routes/files'));
+app.use('/api/experiment', require('./routes/experiment'));
 
 app.get('/', (req, res) => {
     res.send('Hello World');
