@@ -8,11 +8,12 @@ exports.view = function (req, res) {
         if (err){
             console.log(err);
             res.send(err);
+        }else{
+            res.json({
+                message: 'Dataset Details',
+                data: dataset
+            });
         }
-        res.json({
-            message: 'Dataset Details',
-            data: dataset
-        });
     });
 };
 
@@ -27,13 +28,15 @@ exports.add = function (req, res) {
 
     //Save and check error
     dataset.save(function (err) {
-        if (err)
+        console.log(err);
+        if (err){
             res.json(err);
-
-        res.json({
-            message: "New Dataset Added!",
-            data: dataset
-        });
+        } else {
+            res.json({
+                message: "New Dataset Added!",
+                data: dataset
+            });
+        }
     });
 };
 
@@ -48,12 +51,14 @@ exports.update = function (req, res) {
 
         //save and check errors
         dataset.save(function (err) {
-            if (err)
+            if (err){
                 res.json(err);
-            res.json({
-                message: "Bio Updated Successfully",
-                data: dataset
-            });
+            }else{
+                res.json({
+                    message: "Bio Updated Successfully",
+                    data: dataset
+                });
+            }
         });
     });
 };
@@ -63,11 +68,13 @@ exports.delete = function (req, res) {
     Dataset.deleteOne({
         _id: req.params.bio_id
     }, function (err, contact) {
-        if (err)
-            res.send(err)
-        res.json({
-            status: "success",
-            message: 'Bio Deleted'
-        })
-    })
-}
+        if (err){
+            res.send(err);
+        }else{
+            res.json({
+                status: "success",
+                message: 'Bio Deleted'
+            });
+        }
+    });
+};

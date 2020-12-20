@@ -1,13 +1,26 @@
-const WebSocket = require('ws');
+const { random } = require('lodash');
 
-const wss = new WebSocket.Server({ port: 8080 });
-
-wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
-    console.log('received: %s', message);
-  });
-
-  ws.send('something');
+const httpServer = require('http').createServer();
+const io = require('socket.io')(httpServer, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
 });
 
-module.exports = wss;
+io.on('connection', socket => {
+  // socket.on('thanhnguyen', message => {
+  //   console.log('received: %s', message);
+  // });
+  socket.handshake.query.id && (socket.id = socket.handshake.query.id);
+  // socket.emit('thanhnguyen', socket.handshake.query.id);
+  // console.log(socket.handshake.query.id);
+
+  // setInterval(() => {
+  //   socket.emit('thanhnguyen-realtime-test', random(100));
+  // }, 1000);
+});
+
+httpServer.listen(8080);
+
+module.exports = io;

@@ -2,9 +2,9 @@ const formidable = require('formidable');
 const file = require('fs');
 const express = require('express');
 const router = express.Router();
-var socket = require('../ws/server');
+var io = require('../ws/server');
 const WebSocket = require('ws');
-const { get, set } = require('lodash');
+const { get, set, find } = require('lodash');
 
 const DatasetControler = require('../controller/datasetController');
 
@@ -46,18 +46,19 @@ router.post('/upload', async (req, res, next) => {
         //     console.log(data);
         // })
         .on('progress', (bytesReceived, bytesExpected) => {
-            socket.clients.forEach(function each(client) {
-                if (client.readyState === WebSocket.OPEN) {
-                  client.send(Math.round(bytesReceived/bytesExpected * 100));
-                }
-            });
+            // console.log(io.sockets.sockets);
+            const socket = find(Array.from(io.sockets.sockets.values()), {'id': 'thanhnguyen', connected: true});
+            if (socket) {
+                socket.emit('thanhnguyen', Math.round(bytesReceived/bytesExpected * 100));
+            }
+            // io.to('thanhnguyen').emit('thanhnguyen', Math.round(bytesReceived/bytesExpected * 100))
         })
         .on("aborted", () => {
             reject(res.status(500).send('Aborted'))  
         })
         .on("end", () => {
-            // console.log('reqData', JSON.stringify(reqData));
-            const req = {
+            console.log('reqData', JSON.stringify(reqData));
+            const _req = {
                 body: {
                     owner_id: reqData.user.id,
                     name: reqData.datasetName,
@@ -66,7 +67,7 @@ router.post('/upload', async (req, res, next) => {
                 }
             };
 
-            DatasetControler.add(req, res);
+            DatasetControler.add(_req, res);
         });
 
         await form.parse(req);
