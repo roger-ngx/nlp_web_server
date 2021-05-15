@@ -1,5 +1,6 @@
 const formidable = require('formidable');
 const file = require('fs');
+const path = require('path');
 const express = require('express');
 const router = express.Router();
 var io = require('../ws/server');
@@ -28,12 +29,15 @@ router.post('/upload', async (req, res, next) => {
 
         form.on("file", (name, f) => {
             // console.log(f);
+            try{
+                const data = file.readFileSync(f.path);
+                file.writeFileSync(`${path.resolve('./')}/uploaded_files/${get(reqData, 'user.id','')}-${f.name}`, data);
+                file.unlinkSync(f.path);
 
-            const data = file.readFileSync(f.path);
-            file.writeFileSync(`/Users/thanhnguyen/Code/roger/files_come_here/${get(reqData, 'user.id','')}-${f.name}`, data);
-            file.unlinkSync(f.path);
-
-            set(reqData, 'filePath', `/Users/thanhnguyen/Code/roger/files_come_here/${get(reqData, 'user.id','')}-${f.name}`);
+                set(reqData, 'filePath', `${path.resolve('./')}/uploaded_files/${get(reqData, 'user.id','')}-${f.name}`);
+            }catch(ex){
+                console.log(ex);
+            }
         })
         .on('field', (key, value) => {
             if(key==='user'){
@@ -54,7 +58,7 @@ router.post('/upload', async (req, res, next) => {
             // io.to('thanhnguyen').emit('thanhnguyen', Math.round(bytesReceived/bytesExpected * 100))
         })
         .on("aborted", () => {
-            reject(res.status(500).send('Aborted'))  
+            reject(res.status(500).send('Aborted')) 
         })
         .on("end", () => {
             console.log('reqData', JSON.stringify(reqData));
