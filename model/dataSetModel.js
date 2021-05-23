@@ -5,6 +5,10 @@ var dataSetSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    project_id: {
+        type: String,
+        required: true,
+    },
     name: {
         type: String,
         required: true

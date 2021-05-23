@@ -9,11 +9,7 @@ const { get, set, find } = require('lodash');
 
 const DatasetControler = require('../controller/datasetController');
 
-router.get('/', async (req, res, next) => {
-    res.send('file api');
-});
-
-router.route('/:owner_id').get(DatasetControler.view);
+router.route('/').post(DatasetControler.view);
 
 router.post('/upload', async (req, res, next) => {
     console.log('req body: ' + JSON.stringify(req.body));
@@ -61,17 +57,24 @@ router.post('/upload', async (req, res, next) => {
             reject(res.status(500).send('Aborted')) 
         })
         .on("end", () => {
-            console.log('reqData', JSON.stringify(reqData));
-            const _req = {
-                body: {
-                    owner_id: reqData.user.id,
-                    name: reqData.datasetName,
-                    type: reqData.datasetType,
-                    filePath: reqData.filePath
-                }
-            };
+            try{
+                const {user, projectId, datasetName, datasetType, filePath} = reqData;
 
-            DatasetControler.add(_req, res);
+                const _req = {
+                    body: {
+                        owner_id: user.id,
+                        project_id: projectId,
+                        name: datasetName,
+                        type: datasetType,
+                        filePath: filePath
+                    }
+                };
+
+                DatasetControler.add(_req, res);
+                res.status(200).send('Dataset is saved');
+            }catch(ex){
+                res.status(500).send('Error' + JSON.parse(ex));
+            }
         });
 
         await form.parse(req);

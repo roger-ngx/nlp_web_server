@@ -30,7 +30,7 @@ exports.add = function (req, res) {
         if (err)
             res.json(err);
 
-    res.json({
+        res.json({
             message: "New Project Added!",
             data: project
         });

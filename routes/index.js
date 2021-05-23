@@ -18,25 +18,27 @@ router.get('/login', function(req, res, next) {
   res.json(token);
 });
 
-router.post('/google_login', function(req, res, next) {
+//https://developers.google.com/identity/sign-in/web/backend-auth
+router.post('/google_login', async (req, res, next) => {
   const token = req.body.token;
 
-  verify(token).catch(console.error);
+  const uid = await verify(token);
 
-  res.json(token);
+  res.json(uid);
 });
 
 async function verify(token) {
   const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
+      audience: process.env.GOOGLE_CLIENT_ID, 
+      // Specify the CLIENT_ID of the app that accesses the backend
       // Or, if multiple clients access the backend:
       //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
   });
   const payload = ticket.getPayload();
   const userid = payload['sub'];
 
-  console.log(payload);
+  return userid;
   // If request specified a G Suite domain:
   // const domain = payload['hd'];
 }
