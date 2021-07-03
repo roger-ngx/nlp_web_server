@@ -21,6 +21,6 @@ io.on('connection', socket => {
   // }, 1000);
 });
 
-httpServer.listen(8080);
+httpServer.listen(8052);
 
 module.exports = io;
