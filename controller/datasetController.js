@@ -2,9 +2,10 @@ const Dataset = require('../model/dataSetModel');
 
 // View Dataset
 exports.view = function (req, res) {
-    console.log(req.params.owner_id);
+    const { userId, projectId } = req.body;
+    console.log(req.body);
 
-    Dataset.find({owner_id: req.params.owner_id}, function (err, dataset) {
+    Dataset.find({owner_id: userId, project_id: projectId}, function (err, dataset) {
         if (err){
             console.log(err);
             res.send(err);
@@ -18,13 +19,14 @@ exports.view = function (req, res) {
 };
 
 exports.add = function (req, res) {
-    console.log(req.body);
+    const {owner_id, project_id, name, type, filePath} = req.body;
 
     var dataset = new Dataset();
-    dataset.owner_id = req.body.owner_id;
-    dataset.name = req.body.name? req.body.name: dataset.name;
-    dataset.type = req.body.type;
-    dataset.filePath = req.body.filePath;
+    dataset.owner_id = owner_id;
+    dataset.project_id = project_id;
+    dataset.name = name || dataset.name;
+    dataset.type = type;
+    dataset.filePath = filePath;
 
     //Save and check error
     dataset.save(function (err) {

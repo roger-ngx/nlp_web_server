@@ -1,5 +1,6 @@
 const formidable = require('formidable');
 const file = require('fs');
+const path = require('path');
 const express = require('express');
 const router = express.Router();
 var io = require('../ws/server');
@@ -8,11 +9,7 @@ const { get, set, find } = require('lodash');
 
 const DatasetControler = require('../controller/datasetController');
 
-router.get('/', async (req, res, next) => {
-    res.send('file api');
-});
-
-router.route('/:owner_id').get(DatasetControler.view);
+router.route('/').post(DatasetControler.view);
 
 router.post('/upload', async (req, res, next) => {
     console.log('req body: ' + JSON.stringify(req.body));
@@ -28,12 +25,15 @@ router.post('/upload', async (req, res, next) => {
 
         form.on("file", (name, f) => {
             // console.log(f);
+            try{
+                const data = file.readFileSync(f.path);
+                file.writeFileSync(`${path.resolve('./')}/uploaded_files/${get(reqData, 'user.id','')}-${f.name}`, data);
+                file.unlinkSync(f.path);
 
-            const data = file.readFileSync(f.path);
-            file.writeFileSync(`/Users/thanhnguyen/Code/roger/files_come_here/${get(reqData, 'user.id','')}-${f.name}`, data);
-            file.unlinkSync(f.path);
-
-            set(reqData, 'filePath', `/Users/thanhnguyen/Code/roger/files_come_here/${get(reqData, 'user.id','')}-${f.name}`);
+                set(reqData, 'filePath', `${path.resolve('./')}/uploaded_files/${get(reqData, 'user.id','')}-${f.name}`);
+            }catch(ex){
+                console.log(ex);
+            }
         })
         .on('field', (key, value) => {
             if(key==='user'){
@@ -54,20 +54,27 @@ router.post('/upload', async (req, res, next) => {
             // io.to('thanhnguyen').emit('thanhnguyen', Math.round(bytesReceived/bytesExpected * 100))
         })
         .on("aborted", () => {
-            reject(res.status(500).send('Aborted'))  
+            reject(res.status(500).send('Aborted')) 
         })
         .on("end", () => {
-            console.log('reqData', JSON.stringify(reqData));
-            const _req = {
-                body: {
-                    owner_id: reqData.user.id,
-                    name: reqData.datasetName,
-                    type: reqData.datasetType,
-                    filePath: reqData.filePath
-                }
-            };
+            try{
+                const {user, projectId, datasetName, datasetType, filePath} = reqData;
 
-            DatasetControler.add(_req, res);
+                const _req = {
+                    body: {
+                        owner_id: user.id,
+                        project_id: projectId,
+                        name: datasetName,
+                        type: datasetType,
+                        filePath: filePath
+                    }
+                };
+
+                DatasetControler.add(_req, res);
+                res.status(200).send('Dataset is saved');
+            }catch(ex){
+                res.status(500).send('Error' + JSON.parse(ex));
+            }
         });
 
         await form.parse(req);

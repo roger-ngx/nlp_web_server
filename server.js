@@ -3,7 +3,8 @@ var socket = require('./ws/server');
 const cors = require('cors');
 const express = require('express');
 const app = express();
-const port = 3001;
+const port = 8051;
+const { authenticateToken } = require('./middleware/jwt');
 
 app.use(cors());
 
@@ -21,14 +22,14 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 //this shoud be configured before define routes
+app.use('/api', require('./routes/index'));
+
+// app.use(authenticateToken);
 
 app.use('/api/bio', require('./routes/bio'));
 app.use('/api/file', require('./routes/files'));
 app.use('/api/experiment', require('./routes/experiment'));
-
-app.get('/', (req, res) => {
-    res.send('Hello World');
-});
+app.use('/api/project', require('./routes/project'));
 
 //MONGODB
 

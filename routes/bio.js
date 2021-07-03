@@ -16,7 +16,7 @@ router.route('/bio')
     .post(bioController.add);
 router.route('/bio/:bio_id')
     .get(bioController.view)
-    .patch(bioController.update)
+    .post(bioController.update)
     .put(bioController.update)
     .delete(bioController.delete);
 //Export API routes
